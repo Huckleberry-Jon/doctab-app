@@ -4,7 +4,9 @@ import 'models/note.dart';
 import 'screens/add_note_screen.dart';
 import 'screens/notes_screen.dart';
 import 'screens/search_screen.dart';
+import 'screens/today_screen.dart';
 import 'services/note_controller.dart';
+import 'services/reminder_controller.dart';
 import 'theme/doctab_theme.dart';
 
 void main() {
@@ -20,16 +22,19 @@ class DocTabApp extends StatefulWidget {
 
 class _DocTabAppState extends State<DocTabApp> {
   final NoteController _notes = NoteController();
+  final ReminderController _reminders = ReminderController();
 
   @override
   void initState() {
     super.initState();
     _notes.load();
+    _reminders.load();
   }
 
   @override
   void dispose() {
     _notes.dispose();
+    _reminders.dispose();
     super.dispose();
   }
 
@@ -39,15 +44,23 @@ class _DocTabAppState extends State<DocTabApp> {
       title: 'DocTab',
       debugShowCheckedModeBanner: false,
       theme: DocTabTheme.light(),
-      home: HomeScreen(controller: _notes),
+      home: HomeScreen(
+        noteController: _notes,
+        reminderController: _reminders,
+      ),
     );
   }
 }
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key, required this.controller});
+  const HomeScreen({
+    super.key,
+    required this.noteController,
+    required this.reminderController,
+  });
 
-  final NoteController controller;
+  final NoteController noteController;
+  final ReminderController reminderController;
 
   Future<void> _addNote(BuildContext context) async {
     final note = await Navigator.push<Note>(
@@ -55,7 +68,7 @@ class HomeScreen extends StatelessWidget {
       MaterialPageRoute(builder: (_) => const AddNoteScreen()),
     );
     if (note != null) {
-      await controller.add(note);
+      await noteController.add(note);
     }
   }
 
@@ -91,11 +104,21 @@ class HomeScreen extends StatelessWidget {
                   mainAxisSpacing: 14,
                   childAspectRatio: 1.08,
                   children: [
-                    const _HomeCard(
+                    _HomeCard(
                       icon: Icons.today_outlined,
                       label: 'Today',
                       subtitle: 'Reminders and tasks',
                       background: DocTabTheme.sage,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => TodayScreen(
+                              controller: reminderController,
+                            ),
+                          ),
+                        );
+                      },
                     ),
                     _HomeCard(
                       icon: Icons.notes_outlined,
@@ -106,7 +129,9 @@ class HomeScreen extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => NotesScreen(controller: controller),
+                            builder: (_) => NotesScreen(
+                              controller: noteController,
+                            ),
                           ),
                         );
                       },
@@ -133,7 +158,9 @@ class HomeScreen extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => SearchScreen(controller: controller),
+                            builder: (_) => SearchScreen(
+                              controller: noteController,
+                            ),
                           ),
                         );
                       },
