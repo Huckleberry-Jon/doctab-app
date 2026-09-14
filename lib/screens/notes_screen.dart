@@ -20,20 +20,61 @@ class NotesScreen extends StatelessWidget {
     }
   }
 
+  Future<void> _loadAxisProofNote(BuildContext context) async {
+    try {
+      final note = await controller.loadAxisProofNote();
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Loaded Axis proof note at revision ${note.revision}.',
+          ),
+        ),
+      );
+    } catch (error) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Could not reach local Axis proof server: $error'),
+        ),
+      );
+    }
+  }
+
   Future<void> _openNote(BuildContext context, Note note) async {
     final updated = await Navigator.push<Note>(
       context,
       MaterialPageRoute(builder: (_) => NoteDetailScreen(note: note)),
     );
-    if (updated != null) {
+    if (updated == null) return;
+
+    try {
       await controller.update(updated);
+    } on NoteConflictException {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'This note changed after you opened it. Your older edit was not saved.',
+          ),
+        ),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Notes')),
+      appBar: AppBar(
+        title: const Text('Notes'),
+        actions: [
+          IconButton(
+            tooltip: 'Load local Axis proof note',
+            onPressed: () => _loadAxisProofNote(context),
+            icon: const Icon(Icons.science_outlined),
+          ),
+        ],
+      ),
       body: AnimatedBuilder(
         animation: controller,
         builder: (context, _) {
@@ -75,7 +116,9 @@ class NotesScreen extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  trailing: const Icon(Icons.chevron_right),
+                  trailing: note.id == NoteController.syntheticProofNoteId
+                      ? Text('r${note.revision}')
+                      : const Icon(Icons.chevron_right),
                   onTap: () => _openNote(context, note),
                 ),
               );

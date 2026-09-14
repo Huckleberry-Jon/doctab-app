@@ -4,6 +4,7 @@ class Note {
   final String content;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final int revision;
 
   const Note({
     required this.id,
@@ -11,6 +12,7 @@ class Note {
     required this.content,
     required this.createdAt,
     required this.updatedAt,
+    this.revision = 1,
   });
 
   Note copyWith({
@@ -19,6 +21,7 @@ class Note {
     String? content,
     DateTime? createdAt,
     DateTime? updatedAt,
+    int? revision,
   }) {
     return Note(
       id: id ?? this.id,
@@ -26,6 +29,7 @@ class Note {
       content: content ?? this.content,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      revision: revision ?? this.revision,
     );
   }
 
@@ -36,6 +40,7 @@ class Note {
       'content': content,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
+      'revision': revision,
     };
   }
 
@@ -46,6 +51,7 @@ class Note {
       content: json['content'] as String,
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
+      revision: (json['revision'] as int?) ?? 1,
     );
   }
 }
