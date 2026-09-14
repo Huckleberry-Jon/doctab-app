@@ -25,8 +25,19 @@ class NotesScreen extends StatelessWidget {
       context,
       MaterialPageRoute(builder: (_) => NoteDetailScreen(note: note)),
     );
-    if (updated != null) {
+    if (updated == null) return;
+
+    try {
       await controller.update(updated);
+    } on NoteConflictException {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'This note changed after you opened it. Your older edit was not saved.',
+          ),
+        ),
+      );
     }
   }
 
