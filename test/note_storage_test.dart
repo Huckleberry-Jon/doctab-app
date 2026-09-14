@@ -36,7 +36,7 @@ void main() {
   test('legacy saved note without revision defaults to revision 1', () async {
     final now = DateTime(2026, 9, 13, 20, 0);
     SharedPreferences.setMockInitialValues(<String, Object>{
-      'doctab_notes':
+      'doctab_notes_v1':
           '[{"id":"legacy","title":"Legacy","content":"Old data","createdAt":"${now.toIso8601String()}","updatedAt":"${now.toIso8601String()}"}]',
     });
 
