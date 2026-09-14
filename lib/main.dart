@@ -5,9 +5,11 @@ import 'screens/add_note_screen.dart';
 import 'screens/memory_screen.dart';
 import 'screens/notes_screen.dart';
 import 'screens/search_screen.dart';
+import 'screens/settings_screen.dart';
 import 'screens/today_screen.dart';
 import 'services/memory_controller.dart';
 import 'services/note_controller.dart';
+import 'services/privacy_settings_controller.dart';
 import 'services/reminder_controller.dart';
 import 'theme/doctab_theme.dart';
 
@@ -26,6 +28,7 @@ class _DocTabAppState extends State<DocTabApp> {
   final NoteController _notes = NoteController();
   final ReminderController _reminders = ReminderController();
   final MemoryController _memory = MemoryController();
+  final PrivacySettingsController _privacy = PrivacySettingsController();
 
   @override
   void initState() {
@@ -33,6 +36,7 @@ class _DocTabAppState extends State<DocTabApp> {
     _notes.load();
     _reminders.load();
     _memory.load();
+    _privacy.load();
   }
 
   @override
@@ -40,6 +44,7 @@ class _DocTabAppState extends State<DocTabApp> {
     _notes.dispose();
     _reminders.dispose();
     _memory.dispose();
+    _privacy.dispose();
     super.dispose();
   }
 
@@ -53,6 +58,7 @@ class _DocTabAppState extends State<DocTabApp> {
         noteController: _notes,
         reminderController: _reminders,
         memoryController: _memory,
+        privacyController: _privacy,
       ),
     );
   }
@@ -64,11 +70,13 @@ class HomeScreen extends StatelessWidget {
     required this.noteController,
     required this.reminderController,
     required this.memoryController,
+    required this.privacyController,
   });
 
   final NoteController noteController;
   final ReminderController reminderController;
   final MemoryController memoryController;
+  final PrivacySettingsController privacyController;
 
   Future<void> _addNote(BuildContext context) async {
     final note = await Navigator.push<Note>(
@@ -183,11 +191,21 @@ class HomeScreen extends StatelessWidget {
                         );
                       },
                     ),
-                    const _HomeCard(
+                    _HomeCard(
                       icon: Icons.settings_outlined,
                       label: 'Settings',
                       subtitle: 'Privacy and preferences',
                       background: Colors.white,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => SettingsScreen(
+                              controller: privacyController,
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),
