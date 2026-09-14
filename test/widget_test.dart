@@ -25,7 +25,9 @@ void main() {
     await tester.pumpWidget(const DocTabApp());
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Add'));
+    final addFinder = find.text('Add');
+    await tester.ensureVisible(addFinder);
+    await tester.tap(addFinder);
     await tester.pumpAndSettle();
 
     await tester.enterText(find.byType(TextField).at(0), 'Doctor Visit');
@@ -36,7 +38,9 @@ void main() {
     await tester.tap(find.text('Save'));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Notes'));
+    final notesFinder = find.text('Notes');
+    await tester.ensureVisible(notesFinder);
+    await tester.tap(notesFinder);
     await tester.pumpAndSettle();
 
     expect(find.text('Doctor Visit'), findsOneWidget);
