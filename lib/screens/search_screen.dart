@@ -59,7 +59,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   ? const Center(child: Text('No matching notes.'))
                   : ListView.separated(
                       itemCount: results.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 8),
+                      separatorBuilder: (_, _) => const SizedBox(height: 8),
                       itemBuilder: (context, index) {
                         final note = results[index];
                         return Card(
