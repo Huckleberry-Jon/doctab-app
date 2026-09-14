@@ -3,6 +3,23 @@ import 'package:flutter/foundation.dart';
 import '../models/note.dart';
 import '../storage/note_storage.dart';
 
+class NoteConflictException implements Exception {
+  const NoteConflictException({
+    required this.noteId,
+    required this.expectedRevision,
+    required this.actualRevision,
+  });
+
+  final String noteId;
+  final int expectedRevision;
+  final int actualRevision;
+
+  @override
+  String toString() {
+    return 'NoteConflictException(noteId: $noteId, expectedRevision: $expectedRevision, actualRevision: $actualRevision)';
+  }
+}
+
 class NoteController extends ChangeNotifier {
   NoteController({NoteStorage? storage}) : _storage = storage ?? NoteStorage();
 
@@ -26,12 +43,30 @@ class NoteController extends ChangeNotifier {
     await _persist();
   }
 
-  Future<void> update(Note updated) async {
+  Future<Note> update(Note updated) async {
     final index = _notes.indexWhere((note) => note.id == updated.id);
-    if (index == -1) return;
-    _notes[index] = updated;
+    if (index == -1) {
+      return updated;
+    }
+
+    final current = _notes[index];
+    if (current.revision != updated.revision) {
+      throw NoteConflictException(
+        noteId: updated.id,
+        expectedRevision: updated.revision,
+        actualRevision: current.revision,
+      );
+    }
+
+    final persisted = updated.copyWith(
+      updatedAt: DateTime.now(),
+      revision: current.revision + 1,
+    );
+
+    _notes[index] = persisted;
     _sort();
     await _persist();
+    return persisted;
   }
 
   Future<void> delete(String id) async {
