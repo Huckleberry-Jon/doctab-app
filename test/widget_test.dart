@@ -18,6 +18,7 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('Notes'), findsOneWidget);
+    expect(find.text('Today'), findsOneWidget);
   });
 
   testWidgets('user can add a note and see it in Notes',
@@ -51,5 +52,36 @@ void main() {
       find.textContaining('blood pressure log'),
       findsOneWidget,
     );
+  });
+
+  testWidgets('user can open Today and add a reminder',
+      (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(1200, 1200);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    await tester.pumpWidget(const DocTabApp());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Today'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Add Reminder'), findsOneWidget);
+    await tester.tap(find.text('Add Reminder'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField).at(0), 'Call supplier');
+    await tester.enterText(
+      find.byType(TextField).at(1),
+      'Ask about the backordered seal.',
+    );
+    await tester.tap(find.text('Save'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Call supplier'), findsOneWidget);
+    expect(find.textContaining('backordered seal'), findsOneWidget);
   });
 }
