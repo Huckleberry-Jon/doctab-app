@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 
 import 'models/note.dart';
 import 'screens/add_note_screen.dart';
+import 'screens/memory_screen.dart';
 import 'screens/notes_screen.dart';
 import 'screens/search_screen.dart';
 import 'screens/today_screen.dart';
+import 'services/memory_controller.dart';
 import 'services/note_controller.dart';
 import 'services/reminder_controller.dart';
 import 'theme/doctab_theme.dart';
@@ -23,18 +25,21 @@ class DocTabApp extends StatefulWidget {
 class _DocTabAppState extends State<DocTabApp> {
   final NoteController _notes = NoteController();
   final ReminderController _reminders = ReminderController();
+  final MemoryController _memory = MemoryController();
 
   @override
   void initState() {
     super.initState();
     _notes.load();
     _reminders.load();
+    _memory.load();
   }
 
   @override
   void dispose() {
     _notes.dispose();
     _reminders.dispose();
+    _memory.dispose();
     super.dispose();
   }
 
@@ -47,6 +52,7 @@ class _DocTabAppState extends State<DocTabApp> {
       home: HomeScreen(
         noteController: _notes,
         reminderController: _reminders,
+        memoryController: _memory,
       ),
     );
   }
@@ -57,10 +63,12 @@ class HomeScreen extends StatelessWidget {
     super.key,
     required this.noteController,
     required this.reminderController,
+    required this.memoryController,
   });
 
   final NoteController noteController;
   final ReminderController reminderController;
+  final MemoryController memoryController;
 
   Future<void> _addNote(BuildContext context) async {
     final note = await Navigator.push<Note>(
@@ -136,11 +144,21 @@ class HomeScreen extends StatelessWidget {
                         );
                       },
                     ),
-                    const _HomeCard(
+                    _HomeCard(
                       icon: Icons.psychology_outlined,
                       label: 'Memory',
                       subtitle: 'Things to remember long-term',
                       background: DocTabTheme.sand,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => MemoryScreen(
+                              controller: memoryController,
+                            ),
+                          ),
+                        );
+                      },
                     ),
                     _HomeCard(
                       icon: Icons.add_circle_outline,
