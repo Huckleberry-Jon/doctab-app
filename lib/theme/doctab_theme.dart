@@ -11,16 +11,15 @@ class DocTabTheme {
     final scheme = ColorScheme.fromSeed(
       seedColor: accent,
       brightness: Brightness.light,
+    ).copyWith(
+      primary: ink,
+      secondary: accent,
       surface: cream,
     );
 
     return ThemeData(
       useMaterial3: true,
-      colorScheme: scheme.copyWith(
-        primary: ink,
-        secondary: accent,
-        surface: cream,
-      ),
+      colorScheme: scheme,
       scaffoldBackgroundColor: cream,
       appBarTheme: const AppBarTheme(
         backgroundColor: cream,
