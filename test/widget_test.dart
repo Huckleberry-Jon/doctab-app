@@ -22,12 +22,17 @@ void main() {
 
   testWidgets('user can add a note and see it in Notes',
       (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(1200, 1200);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
     await tester.pumpWidget(const DocTabApp());
     await tester.pumpAndSettle();
 
-    final addFinder = find.text('Add');
-    await tester.ensureVisible(addFinder);
-    await tester.tap(addFinder);
+    await tester.tap(find.text('Add'));
     await tester.pumpAndSettle();
 
     await tester.enterText(find.byType(TextField).at(0), 'Doctor Visit');
@@ -38,9 +43,7 @@ void main() {
     await tester.tap(find.text('Save'));
     await tester.pumpAndSettle();
 
-    final notesFinder = find.text('Notes');
-    await tester.ensureVisible(notesFinder);
-    await tester.tap(notesFinder);
+    await tester.tap(find.text('Notes'));
     await tester.pumpAndSettle();
 
     expect(find.text('Doctor Visit'), findsOneWidget);
