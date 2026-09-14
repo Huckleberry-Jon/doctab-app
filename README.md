@@ -1,17 +1,45 @@
-# doctab
+# DocTab
 
-A new Flutter project.
+DocTab is a private, user-controlled workspace for notes, reminders, memory, and future AI assistance.
 
-## Getting Started
+## Current V1 scope
 
-This project is a starting point for a Flutter application.
+The first usable slice is intentionally small:
 
-A few resources to get you started if this is your first Flutter project:
+- Home
+- Notes list
+- Add Note
+- Note detail/edit
+- Search
+- Local note persistence
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+The current acceptance flow is:
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+`Open DocTab -> Add Note -> Save -> Close/reopen -> Note still exists -> Edit -> Search -> Open again`
+
+## Architecture boundaries
+
+This app work does **not** change:
+
+- DocPets production
+- shared authentication
+- production DocAxis extraction
+- production MCP
+- Apple signing or provisioning
+- Codemagic
+- the live DocTab website
+
+DocTab remains the system of record. Future AI integrations are clients of DocTab, not the owner of its data.
+
+## Local verification
+
+After pulling changes:
+
+```bash
+flutter pub get
+flutter analyze
+flutter test
+flutter run
+```
+
+The V1 notes branch uses `shared_preferences` only for local disposable persistence. Backend/auth integration is deliberately out of scope for this slice.
