@@ -1,121 +1,148 @@
 import 'package:flutter/material.dart';
+
+import 'models/note.dart';
+import 'screens/add_note_screen.dart';
 import 'screens/notes_screen.dart';
+import 'screens/search_screen.dart';
+import 'services/note_controller.dart';
+import 'theme/doctab_theme.dart';
+
 void main() {
   runApp(const DocTabApp());
 }
 
-class DocTabApp extends StatelessWidget {
+class DocTabApp extends StatefulWidget {
   const DocTabApp({super.key});
+
+  @override
+  State<DocTabApp> createState() => _DocTabAppState();
+}
+
+class _DocTabAppState extends State<DocTabApp> {
+  final NoteController _notes = NoteController();
+
+  @override
+  void initState() {
+    super.initState();
+    _notes.load();
+  }
+
+  @override
+  void dispose() {
+    _notes.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'DocTab',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xFF0B1118),
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFFFF8A00),
-          brightness: Brightness.dark,
-        ),
-      ),
-      home: const HomeScreen(),
+      theme: DocTabTheme.light(),
+      home: HomeScreen(controller: _notes),
     );
   }
 }
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({super.key, required this.controller});
+
+  final NoteController controller;
+
+  Future<void> _addNote(BuildContext context) async {
+    final note = await Navigator.push<Note>(
+      context,
+      MaterialPageRoute(builder: (_) => const AddNoteScreen()),
+    );
+    if (note != null) {
+      await controller.add(note);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('DocTab'),
-        backgroundColor: Colors.transparent,
-      ),
+      appBar: AppBar(title: const Text('DocTab')),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'Your day. Your notes. Your reminders. One place.',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      color: DocTabTheme.ink,
+                    ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 10),
               Text(
                 'What do you need to remember?',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.white.withValues(alpha: 0.7),
-                ),
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: DocTabTheme.ink.withValues(alpha: 0.72),
+                    ),
               ),
-              const SizedBox(height: 28),
+              const SizedBox(height: 24),
               Expanded(
                 child: GridView.count(
                   crossAxisCount: 2,
                   crossAxisSpacing: 14,
                   mainAxisSpacing: 14,
+                  childAspectRatio: 1.08,
                   children: [
-                    _HomeCard(
+                    const _HomeCard(
                       icon: Icons.today_outlined,
                       label: 'Today',
+                      subtitle: 'Reminders and tasks',
+                      background: DocTabTheme.sage,
                     ),
-                    Card(
-  child: InkWell(
-    borderRadius: BorderRadius.circular(16),
-    onTap: () {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => const NotesScreen(),
-        ),
-      );
-    },
-    child: const Padding(
-      padding: EdgeInsets.all(18),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.notes_outlined,
-            size: 40,
-          ),
-          SizedBox(height: 12),
-          Text(
-            'Notes',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    ),
-  ),
-),
                     _HomeCard(
+                      icon: Icons.notes_outlined,
+                      label: 'Notes',
+                      subtitle: 'Save what matters',
+                      background: Colors.white,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => NotesScreen(controller: controller),
+                          ),
+                        );
+                      },
+                    ),
+                    const _HomeCard(
                       icon: Icons.psychology_outlined,
                       label: 'Memory',
+                      subtitle: 'Things to remember long-term',
+                      background: DocTabTheme.sand,
                     ),
                     _HomeCard(
                       icon: Icons.add_circle_outline,
                       label: 'Add',
+                      subtitle: 'Create a quick note',
+                      background: Colors.white,
+                      onTap: () => _addNote(context),
                     ),
                     _HomeCard(
                       icon: Icons.search,
                       label: 'Search',
+                      subtitle: 'Find saved notes',
+                      background: DocTabTheme.sage,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => SearchScreen(controller: controller),
+                          ),
+                        );
+                      },
                     ),
-                    _HomeCard(
+                    const _HomeCard(
                       icon: Icons.settings_outlined,
                       label: 'Settings',
+                      subtitle: 'Privacy and preferences',
+                      background: Colors.white,
                     ),
                   ],
                 ),
@@ -129,36 +156,50 @@ class HomeScreen extends StatelessWidget {
 }
 
 class _HomeCard extends StatelessWidget {
-  final IconData icon;
-  final String label;
-
   const _HomeCard({
     required this.icon,
     required this.label,
+    required this.subtitle,
+    required this.background,
+    this.onTap,
   });
+
+  final IconData icon;
+  final String label;
+  final String subtitle;
+  final Color background;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     return Card(
+      color: background,
+      clipBehavior: Clip.antiAlias,
       child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: () {},
+        onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.all(18),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                icon,
-                size: 40,
-                color: Theme.of(context).colorScheme.primary,
-              ),
+              Icon(icon, size: 38, color: DocTabTheme.ink),
               const SizedBox(height: 12),
               Text(
                 label,
+                textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 18,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w700,
+                  color: DocTabTheme.ink,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                subtitle,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: DocTabTheme.ink.withValues(alpha: 0.68),
                 ),
               ),
             ],
